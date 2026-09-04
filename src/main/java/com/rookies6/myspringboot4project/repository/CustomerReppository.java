@@ -1,0 +1,16 @@
+package com.rookies6.myspringboot4project.repository;
+
+import com.rookies6.myspringboot4project.entity.Customer;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface CustomerReppository extends JpaRepository<Customer,Long> {
+    //finder(query) method
+    //1. customerID(고객번호, Unique이므로 중복허용안함)로 조회하는 find 메서드
+    Optional<Customer> findByCustomerId(String customerId);
+
+    //2. customerName(고객명, 중복허용함(로 조회하는 finder 메서드 % name %
+    List<Customer> findByCustomerNameContains(String customerName);
+}
