@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.rookies6.myspringboot4project.entity.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class UserRestController {
 
     }
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public User getUserById(@PathVariable Long id) {
         Optional<User> optionalUser = userRepository.findById(id);//Optional<User>
         //orElseThrow(Supplier) Supplier의 추상메서드 () -> T
@@ -45,6 +47,7 @@ public class UserRestController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<User> getUsers(){
         return userRepository.findAll();
     }
@@ -70,5 +73,10 @@ public class UserRestController {
         User existUser = getUser(userRepository.findById(id));
         userRepository.delete(existUser);
         return ResponseEntity.ok("Id = " + id + "User가 삭제 되었습니다.");
+    }
+
+    @GetMapping("/welcome")
+    public String welcome() {
+        return "Welcome this endpoint is not secure";
     }
 }
