@@ -1,5 +1,6 @@
 ## SpringBoot와 JPA 활용
-* Student 단일 Entity
+* Student 와 StudentDetail 엔티티
+  * 1:1 매핑 연관관계
 * Entity, Repository
 * Service
   * @Transactional
