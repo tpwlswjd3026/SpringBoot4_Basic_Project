@@ -120,6 +120,68 @@ public class StudentService {
             //Student가 연관된 StudentDetail 객체를 가져오기
             StudentDetail studentDetail = student.getStudentDetail();
 
+            // 중복 검사를 먼저 수행한다.
+            // 검사용 조회 쿼리가 실행되면 영속성 컨텍스트가 flush 되는데,
+            // 값이 채워지지 않은 StudentDetail 을 먼저 연결해 두면
+            // address 등 NOT NULL 컬럼에 null 이 들어가 제약조건 위반이 발생한다.
+            // Validate email is not already in use (if changing)
+            if (isEmailChangingAndExists(studentDetail, request.getDetailRequest())) {
+                throw new BusinessException(ErrorCode.EMAIL_DUPLICATE,
+                        request.getDetailRequest().getEmail());
+            }
+
+            // Validate phone number is not already in use (if changing)
+            if (isPhoneNumberChangingAndExists(studentDetail, request.getDetailRequest())) {
+                throw new BusinessException(ErrorCode.PHONE_NUMBER_DUPLICATE,
+                        request.getDetailRequest().getPhoneNumber());
+            }
+
+            // Create new detail if not exists ( 저장된 StudentDetail 정보가 없을 경우 )
+            if (studentDetail == null) {
+                // 새로운 StudentDetail 객체생성
+                studentDetail = new StudentDetail();
+                //연관된 Student 객체 저장
+                studentDetail.setStudent(student);
+                //연관된 StudenDetail 객체 저장
+                student.setStudentDetail(studentDetail);
+            }
+
+            // Update detail fields
+            studentDetail.setAddress(request.getDetailRequest().getAddress());
+            studentDetail.setPhoneNumber(request.getDetailRequest().getPhoneNumber());
+            studentDetail.setEmail(request.getDetailRequest().getEmail());
+            studentDetail.setDateOfBirth(request.getDetailRequest().getDateOfBirth());
+        }
+
+        // Save and return updated student
+        Student updatedStudent = studentRepository.save(student);
+        return StudentDTO.Response.fromEntity(updatedStudent);
+    }
+
+    @Transactional
+    public StudentDTO.Response updateStudent_org(Long id, StudentDTO.Request request) {
+        // Find the student
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND,
+                        "Student", "id", id));
+
+        // 저장된 학번과 요청한 학번이 일치하지 않으면
+        if (!student.getStudentNumber().equals(request.getStudentNumber()) &&
+                //요청한 학번이 중복되는지 체크하기 위해서 해당학번으로 Student 조회
+                studentRepository.existsByStudentNumber(request.getStudentNumber())) {
+            throw new BusinessException(ErrorCode.STUDENT_NUMBER_DUPLICATE,
+                    request.getStudentNumber());
+        }
+
+        // Update student basic info
+        student.setName(request.getName());
+        student.setStudentNumber(request.getStudentNumber());
+
+        // Update student detail if provided
+        if (request.getDetailRequest() != null) {
+            //Student가 연관된 StudentDetail 객체를 가져오기
+            StudentDetail studentDetail = student.getStudentDetail();
+
             // Create new detail if not exists ( 저장된 StudentDetail 정보가 없을 경우 )
             if (studentDetail == null) {
                 // 새로운 StudentDetail 객체생성

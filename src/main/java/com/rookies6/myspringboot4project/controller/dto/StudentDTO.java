@@ -37,15 +37,16 @@ public class StudentDTO {
     @AllArgsConstructor
     @Builder
     public static class StudentDetailDTO {
-        @NotBlank(message = "Address is required")
-        @Size(max = 200, message = "Address cannot exceed 200 characters")
+//        @NotBlank(message = "Address is required")
+//        @Size(max = 200, message = "Address cannot exceed 200 characters")
         private String address;
 
         @NotBlank(message = "Phone number is required")
         @Size(max = 20, message = "Phone number cannot exceed 20 characters")
         private String phoneNumber;
 
-        @Size(max = 100, message = "Email cannot exceed 100 characters")
+        @NotBlank(message = "Email is required")
+        @Size(max = 30, message = "Email cannot exceed 30 characters")
         @Email
         private String email;
 
